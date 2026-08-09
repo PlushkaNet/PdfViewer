@@ -1,3 +1,19 @@
+## Fork notice
+
+This is a fork of [GrapheneOS PdfViewer](https://github.com/GrapheneOS/PdfViewer) with
+reading-history improvements:
+
+- A home screen with a scrollable list of recently opened files.
+- The last read page of each file is remembered; tapping a file in the list
+  reopens it on that page.
+- Individual entries can be removed from the list.
+
+Only metadata (file URI, display name and last page) is stored in the app's
+private storage. PDF content is never copied or cached, and the app still
+requires no permissions.
+
+## Original README
+
 Simple Android PDF viewer based on pdf.js and content providers. The app
 doesn't require any permissions. The PDF stream is fed into the sandboxed
 WebView without giving it access to the network, files, content providers or
