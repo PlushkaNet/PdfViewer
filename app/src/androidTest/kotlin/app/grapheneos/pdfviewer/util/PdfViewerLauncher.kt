@@ -19,6 +19,17 @@ object PdfViewerLauncher {
     fun launchDefault(): ActivityScenario<PdfViewer> =
         ActivityScenario.launch(PdfViewer::class.java)
 
+    /**
+     * Launches the viewer directly (like a VIEW intent) without a document,
+     * for tests that exercise the viewer UI without loading a file.
+     */
+    fun launchViewerOnly(): ActivityScenario<PdfViewer> {
+        val intent = Intent(Intent.ACTION_VIEW).apply {
+            setClass(context, PdfViewer::class.java)
+        }
+        return ActivityScenario.launch(intent)
+    }
+
     fun launchWithPdf(uri: Uri): ActivityScenario<PdfViewer> =
         launchWithViewAction(uri, "application/pdf")
 

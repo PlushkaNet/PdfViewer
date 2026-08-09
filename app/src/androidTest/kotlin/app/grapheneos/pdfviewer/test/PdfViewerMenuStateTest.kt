@@ -39,7 +39,7 @@ class PdfViewerMenuStateTest {
 
     @Test
     fun preLoadState_navigationItemsNotShown() {
-        PdfViewerLauncher.launchDefault().use {
+        PdfViewerLauncher.launchViewerOnly().use {
             robot.assertNavigationNotShown()
         }
     }
@@ -102,7 +102,6 @@ class PdfViewerMenuStateTest {
             }
             composeRule.waitForIdle()
 
-            robot.assertMenuItemEnabled(PdfViewerRobot.AppMenuItem.Open, expected = false)
             robot.assertMenuItemEnabled(PdfViewerRobot.AppMenuItem.Next, expected = false)
             robot.assertMenuItemEnabled(PdfViewerRobot.AppMenuItem.Previous, expected = false)
             robot.assertMenuItemEnabled(PdfViewerRobot.AppMenuItem.Share, expected = false)

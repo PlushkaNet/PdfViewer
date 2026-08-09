@@ -39,11 +39,10 @@ class PdfViewerLaunchTest {
     }
 
     @Test
-    fun coldLaunch_noIntent_showsDefaultUiState() {
+    fun coldLaunch_noIntent_showsHomeScreen() {
         PdfViewerLauncher.launchDefault().use { scenario ->
-            robot.assertWebViewVisible()
+            robot.assertHomeScreenShown()
             robot.assertCrashUiHidden()
-            robot.assertToolbarTitleIsAppName(scenario)
 
             scenario.onActivity {
                 assertEquals(0, it.currentPage)

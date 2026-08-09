@@ -37,7 +37,7 @@ class PdfViewerCrashRecoveryTest {
 
     @Test
     fun reloadButton_dismissesCrashUiAndRecovers() {
-        PdfViewerLauncher.launchDefault().use { scenario ->
+        PdfViewerLauncher.launchViewerOnly().use { scenario ->
             scenario.onActivity { it.crashed = true }
             scenario.recreate()
 

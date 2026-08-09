@@ -63,4 +63,10 @@
     <string name="zoom_range">Percentage (%1$d–%2$d%%)</string>
 
     <string name="unknown_file_size">Unknown</string>
+
+    <string name="back">Back</string>
+    <string name="recent_files_empty">No recently opened files</string>
+    <string name="recent_files_page">Page %1$d</string>
+    <string name="recent_file_unknown_name">Unknown</string>
+    <string name="recent_file_remove">Remove from recent files</string>
 </resources>

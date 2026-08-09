@@ -17,6 +17,7 @@ import android.webkit.WebResourceResponse
 import android.webkit.WebSettings
 import android.webkit.WebView
 import android.webkit.WebViewClient
+import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
@@ -45,6 +46,7 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
@@ -227,7 +229,8 @@ fun PdfViewerScreen(
     initialMimeError: Boolean = false,
     onRequestRecreate: () -> Unit = {},
     onWebViewCreated: (WebView) -> Unit = {},
-    onWebViewDestroyed: () -> Unit = {}
+    onWebViewDestroyed: () -> Unit = {},
+    onRequestBack: (() -> Unit)? = null
 ) {
     val context = LocalContext.current
     val activity = context as Activity
@@ -333,6 +336,10 @@ fun PdfViewerScreen(
         }
     }
 
+    BackHandler(enabled = onRequestBack != null && !showPasswordDialog) {
+        onRequestBack?.invoke()
+    }
+
     val viewConfiguration = remember { ViewConfiguration.get(context) }
     val swipeThreshold = remember { viewConfiguration.scaledTouchSlop * 6 }
     val swipeVelocityThreshold = remember { viewConfiguration.scaledMinimumFlingVelocity }
@@ -390,18 +397,6 @@ fun PdfViewerScreen(
         })
         onDispose {
             wv.setOnTouchListener(null)
-        }
-    }
-
-    val openDocumentLauncher = rememberLauncherForActivityResult(
-        ActivityResultContracts.StartActivityForResult()
-    ) { result ->
-        if (result.resultCode != Activity.RESULT_OK) return@rememberLauncherForActivityResult
-        result.data?.data?.let { newUri ->
-            viewModel.setUri(newUri)
-            viewModel.resetDocumentState()
-            viewModel.setToolbarVisible(true)
-            loadPdf(viewModel, webView)
         }
     }
 
@@ -500,8 +495,6 @@ fun PdfViewerScreen(
             PdfTopAppBar(
                 title = displayName,
                 documentLoaded = documentLoaded,
-                webViewCrashed = webViewCrashed,
-                webViewOk = webViewOk,
                 hasPages = hasPages,
                 enabled = enabled,
                 page = page,
@@ -510,16 +503,11 @@ fun PdfViewerScreen(
                 hasDocumentProperties = documentProperties != null,
                 hasUri = uri != null,
                 showMenu = showMenu,
+                showBack = onRequestBack != null,
+                onBack = { onRequestBack?.invoke() },
                 onMenuToggle = { showMenu = it },
                 onPrevious = { jumpToPage(viewModel, webView, page - 1) },
                 onNext = { jumpToPage(viewModel, webView, page + 1) },
-                onOpen = {
-                    val intent = Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
-                        addCategory(Intent.CATEGORY_OPENABLE)
-                        type = PDF_MIME
-                    }
-                    openDocumentLauncher.launch(intent)
-                },
                 onFirst = { jumpToPage(viewModel, webView, 1) },
                 onLast = { jumpToPage(viewModel, webView, numPages) },
                 onJumpToPage = { showJumpToPage = true },
@@ -806,8 +794,6 @@ private fun purgeWebView(webView: WebView) {
 private fun PdfTopAppBar(
     title: String,
     documentLoaded: Boolean,
-    webViewCrashed: Boolean,
-    webViewOk: Boolean,
     hasPages: Boolean,
     enabled: Boolean,
     page: Int,
@@ -816,10 +802,11 @@ private fun PdfTopAppBar(
     hasDocumentProperties: Boolean,
     hasUri: Boolean,
     showMenu: Boolean,
+    showBack: Boolean,
+    onBack: () -> Unit,
     onMenuToggle: (Boolean) -> Unit,
     onPrevious: () -> Unit,
     onNext: () -> Unit,
-    onOpen: () -> Unit,
     onFirst: () -> Unit,
     onLast: () -> Unit,
     onJumpToPage: () -> Unit,
@@ -841,6 +828,16 @@ private fun PdfTopAppBar(
         title = { Text(title, maxLines = 1) },
         modifier = modifier,
         colors = darkTopAppBarColors(),
+        navigationIcon = {
+            if (showBack) {
+                IconButton(onClick = onBack) {
+                    Icon(
+                        Icons.AutoMirrored.Filled.ArrowBack,
+                        contentDescription = stringResource(R.string.back)
+                    )
+                }
+            }
+        },
         actions = {
             if (documentLoaded && hasPages) {
                 IconButton(onClick = onPrevious, enabled = enabled && page > 1) {
@@ -855,13 +852,6 @@ private fun PdfTopAppBar(
                         contentDescription = stringResource(R.string.action_next)
                     )
                 }
-            }
-
-            IconButton(onClick = onOpen, enabled = !webViewCrashed && webViewOk) {
-                Icon(
-                    painterResource(R.drawable.ic_open_file_24dp),
-                    contentDescription = stringResource(R.string.action_open)
-                )
             }
 
             if (documentLoaded) {

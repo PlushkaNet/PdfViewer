@@ -1,6 +1,10 @@
 package app.grapheneos.pdfviewer.util
 
+import android.app.Activity
+import android.app.Instrumentation
+import android.content.Intent
 import android.graphics.Rect
+import android.net.Uri
 import android.view.View
 import android.webkit.WebView
 import androidx.annotation.StringRes
@@ -22,10 +26,14 @@ import androidx.compose.ui.test.performTextInput
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.test.core.app.ActivityScenario
+import androidx.test.espresso.Espresso
 import androidx.test.espresso.Espresso.onView
 import androidx.test.espresso.action.ViewActions.click
 import androidx.test.espresso.assertion.ViewAssertions.doesNotExist
 import androidx.test.espresso.assertion.ViewAssertions.matches
+import androidx.test.espresso.intent.Intents
+import androidx.test.espresso.intent.Intents.intending
+import androidx.test.espresso.intent.matcher.IntentMatchers.hasAction
 import androidx.test.espresso.matcher.ViewMatchers.isAssignableFrom
 import androidx.test.espresso.matcher.ViewMatchers.isDisplayed
 import androidx.test.platform.app.InstrumentationRegistry
@@ -64,7 +72,6 @@ class PdfViewerRobot(private val composeRule: ComposeTestRule) {
     enum class AppMenuItem(
         @StringRes internal val titleRes: Int
     ) {
-        Open(R.string.action_open),
         Previous(R.string.action_previous),
         Next(R.string.action_next),
         First(R.string.action_first),
@@ -89,6 +96,63 @@ class PdfViewerRobot(private val composeRule: ComposeTestRule) {
 
     fun assertWebViewVisible() {
         onView(isAssignableFrom(WebView::class.java)).check(matches(isDisplayed()))
+    }
+
+    fun assertWebViewNotVisible() {
+        onView(isAssignableFrom(WebView::class.java)).check(doesNotExist())
+    }
+
+    // Home screen
+
+    fun assertHomeScreenShown() {
+        composeRule
+            .onNodeWithText(getTargetContext().getString(R.string.recent_files_empty))
+            .assertIsDisplayed()
+        assertWebViewNotVisible()
+    }
+
+    fun clickHomeOpen() {
+        composeRule.onNodeWithTag(TestTags.HOME_OPEN_BUTTON).performClick()
+    }
+
+    /**
+     * Stubs the ACTION_OPEN_DOCUMENT picker on the home screen and picks [uri].
+     */
+    fun openDocumentFromHome(uri: Uri) {
+        Intents.init()
+        try {
+            intending(hasAction(Intent.ACTION_OPEN_DOCUMENT))
+                .respondWith(
+                    Instrumentation.ActivityResult(
+                        Activity.RESULT_OK,
+                        Intent().apply { data = uri }
+                    )
+                )
+            clickHomeOpen()
+        } finally {
+            Intents.release()
+        }
+    }
+
+    fun assertRecentFilePage(page: Int) {
+        composeRule
+            .onNodeWithText(
+                getTargetContext().getString(R.string.recent_files_page, page),
+                substring = true
+            )
+            .assertIsDisplayed()
+    }
+
+    fun clickRecentFile(position: Int) {
+        composeRule.onAllNodesWithTag(TestTags.RECENT_ITEM)[position].performClick()
+    }
+
+    fun removeRecentFile(position: Int) {
+        composeRule.onAllNodesWithTag(TestTags.RECENT_REMOVE_BUTTON)[position].performClick()
+    }
+
+    fun pressBack() {
+        Espresso.pressBack()
     }
 
     fun assertCrashUiHidden() {

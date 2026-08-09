@@ -65,28 +65,6 @@ class PdfViewerIntentTest {
     }
 
     /**
-     * action_open fires ACTION_OPEN_DOCUMENT with type application/pdf.
-     */
-    @Test
-    fun actionOpen_firesCorrectIntent() {
-        PdfViewerLauncher.launchDefault().use {
-            Intents.init()
-            try {
-                stubAllExternalIntents()
-
-                robot.click(AppMenuItem.Open)
-
-                intended(allOf(
-                    hasAction(Intent.ACTION_OPEN_DOCUMENT),
-                    hasType("application/pdf")
-                ))
-            } finally {
-                Intents.release()
-            }
-        }
-    }
-
-    /**
      * action_share fires ACTION_CHOOSER with EXTRA_INTENT.
      */
     @Test
