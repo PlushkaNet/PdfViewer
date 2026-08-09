@@ -55,7 +55,7 @@ class PdfViewerStatePersistenceTest {
 
     @Test
     fun crashState_survivesRecreation_showsCrashUi() {
-        PdfViewerLauncher.launchDefault().use { scenario ->
+        PdfViewerLauncher.launchViewerOnly().use { scenario ->
             scenario.onActivity {
                 it.crashed = true
             }

@@ -1,11 +1,5 @@
 package app.grapheneos.pdfviewer.test
 
-import android.app.Activity
-import android.app.Instrumentation
-import android.content.Intent
-import androidx.test.espresso.intent.Intents
-import androidx.test.espresso.intent.Intents.intending
-import androidx.test.espresso.intent.matcher.IntentMatchers.hasAction
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import app.grapheneos.pdfviewer.testrules.RetryRules
 import app.grapheneos.pdfviewer.RetryableComposeRule
@@ -141,25 +135,13 @@ class PdfViewerEncryptedPdfTest {
 
     @Test
     fun openEncryptedPdf_afterNonEncrypted_promptsForPassword() {
-        PdfViewerLauncher.launchWithTestAsset("test-simple.pdf").use { scenario ->
+        PdfViewerLauncher.launchDefault().use { scenario ->
+            robot.openDocumentFromHome(PdfViewerLauncher.testAssetUri("test-simple.pdf"))
             PdfViewerTestUtils.waitForDocumentFullyLoaded(scenario)
             PdfViewerTestUtils.waitForCanvasRendered(scenario)
 
-            Intents.init()
-            try {
-                intending(hasAction(Intent.ACTION_OPEN_DOCUMENT))
-                    .respondWith(
-                        Instrumentation.ActivityResult(
-                            Activity.RESULT_OK,
-                            Intent().apply {
-                                data = PdfViewerLauncher.testAssetUri("test-encrypted.pdf")
-                            }
-                        )
-                    )
-                robot.click(PdfViewerRobot.AppMenuItem.Open)
-            } finally {
-                Intents.release()
-            }
+            robot.pressBack()
+            robot.openDocumentFromHome(PdfViewerLauncher.testAssetUri("test-encrypted.pdf"))
 
             robot.waitForPasswordDialog()
             robot.typePassword("testpass")

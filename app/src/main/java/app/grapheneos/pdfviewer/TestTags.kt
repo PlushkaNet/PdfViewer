@@ -10,4 +10,8 @@ object TestTags {
     const val JUMP_TO_PAGE_FIELD = "jump_to_page_field"
     const val CUSTOM_ZOOM_FIELD = "custom_zoom_field"
     const val ZOOM_PERCENTAGE = "zoom_percentage"
+    const val RECENT_LIST = "recent_list"
+    const val RECENT_ITEM = "recent_item"
+    const val RECENT_REMOVE_BUTTON = "recent_remove_button"
+    const val HOME_OPEN_BUTTON = "home_open_button"
 }

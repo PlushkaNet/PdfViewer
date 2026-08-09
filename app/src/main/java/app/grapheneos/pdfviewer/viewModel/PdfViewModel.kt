@@ -8,11 +8,13 @@ import androidx.annotation.VisibleForTesting
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
+import app.grapheneos.pdfviewer.App
 import app.grapheneos.pdfviewer.R
 import app.grapheneos.pdfviewer.outline.OutlineNode
 import app.grapheneos.pdfviewer.properties.DEFAULT_VALUE
 import app.grapheneos.pdfviewer.properties.DocumentPropertiesRetriever
 import app.grapheneos.pdfviewer.properties.DocumentProperty
+import app.grapheneos.pdfviewer.recent.RecentFilesRepository
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -48,8 +50,18 @@ class PdfViewModel(
     val uri: StateFlow<Uri?> = savedStateHandle.getStateFlow(STATE_URI, null)
     fun setUri(value: Uri?) { savedStateHandle[STATE_URI] = value }
 
+    private val recentFilesRepository: RecentFilesRepository
+        get() = getApplication<App>().recentFilesRepository
+
     val page: StateFlow<Int> = savedStateHandle.getStateFlow(STATE_PAGE, 0)
-    fun setPage(value: Int) { savedStateHandle[STATE_PAGE] = value }
+    fun setPage(value: Int) {
+        savedStateHandle[STATE_PAGE] = value
+        if (value > 0) {
+            uri.value?.let { u ->
+                recentFilesRepository.addOrUpdate(u.toString(), documentName.value, value)
+            }
+        }
+    }
 
     val documentOrientationDegrees: StateFlow<Int> =
         savedStateHandle.getStateFlow(STATE_DOCUMENT_ORIENTATION_DEGREES, 0)
@@ -65,7 +77,14 @@ class PdfViewModel(
 
     private val _numPages = MutableStateFlow(0)
     val numPages: StateFlow<Int> = _numPages.asStateFlow()
-    fun setNumPages(value: Int) { _numPages.value = value }
+    fun setNumPages(value: Int) {
+        _numPages.value = value
+        if (value > 0) {
+            uri.value?.let { u ->
+                recentFilesRepository.addOrUpdate(u.toString(), documentName.value, page.value.coerceAtLeast(1))
+            }
+        }
+    }
 
     private val _documentLoaded = MutableStateFlow(false)
     val documentLoaded: StateFlow<Boolean> = _documentLoaded.asStateFlow()
@@ -243,6 +262,11 @@ class PdfViewModel(
             withContext(Dispatchers.Main) {
                 savedStateHandle[STATE_DOCUMENT_PROPERTIES] = result
                 savedStateHandle[STATE_DOCUMENT_NAME] = name
+                if (name.isNotEmpty()) {
+                    recentFilesRepository.addOrUpdate(
+                        uri.toString(), name, page.value.coerceAtLeast(1)
+                    )
+                }
             }
         }
     }

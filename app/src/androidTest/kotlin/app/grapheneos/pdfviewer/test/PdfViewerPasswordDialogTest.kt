@@ -38,7 +38,7 @@ class PdfViewerPasswordDialogTest {
 
     @Test
     fun passwordDialog_positiveButtonStartsDisabled() {
-        PdfViewerLauncher.launchDefault().use { scenario ->
+        PdfViewerLauncher.launchViewerOnly().use { scenario ->
             robot.showPasswordDialog(scenario)
             robot.waitForPasswordDialog()
             robot.assertPasswordPositiveButtonEnabled(enabled = false)
@@ -47,7 +47,7 @@ class PdfViewerPasswordDialogTest {
 
     @Test
     fun passwordDialog_typingEnablesPositiveButton() {
-        PdfViewerLauncher.launchDefault().use { scenario ->
+        PdfViewerLauncher.launchViewerOnly().use { scenario ->
             robot.showPasswordDialog(scenario)
             robot.waitForPasswordDialog()
 
@@ -58,7 +58,7 @@ class PdfViewerPasswordDialogTest {
 
     @Test
     fun passwordDialog_clearingTextDisablesPositiveButton() {
-        PdfViewerLauncher.launchDefault().use { scenario ->
+        PdfViewerLauncher.launchViewerOnly().use { scenario ->
             robot.showPasswordDialog(scenario)
             robot.waitForPasswordDialog()
 
@@ -72,7 +72,7 @@ class PdfViewerPasswordDialogTest {
 
     @Test
     fun passwordDialog_invalidPasswordShowsError() {
-        PdfViewerLauncher.launchDefault().use { scenario ->
+        PdfViewerLauncher.launchViewerOnly().use { scenario ->
             robot.showPasswordDialog(scenario)
             robot.waitForPasswordDialog()
             robot.typePassword("wrongpassword")
@@ -89,7 +89,7 @@ class PdfViewerPasswordDialogTest {
 
     @Test
     fun passwordDialog_notDismissibleByBackPress() {
-        PdfViewerLauncher.launchDefault().use { scenario ->
+        PdfViewerLauncher.launchViewerOnly().use { scenario ->
             robot.showPasswordDialog(scenario)
             robot.waitForPasswordDialog()
 
